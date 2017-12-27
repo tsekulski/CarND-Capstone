@@ -5,6 +5,7 @@ from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
 
 import math
+import tf
 
 '''
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -71,7 +72,7 @@ class WaypointUpdater(object):
         self.all_waypoints = None
 
         if DEBUGGING:
-            rospy.loginfo("Waypoint Updater Node initialized")
+            rospy.logwarn("Waypoint Updater Node initialized")
 
         rospy.spin()
 
@@ -79,35 +80,35 @@ class WaypointUpdater(object):
         # TODO: Implement
         # Grab current position from the current_pose message
         self.curr_pose = msg.pose
-        # Find the nearest waypoint ahead
-        	# First, find the closest waypoint
+        ### Find the nearest waypoint ahead
+        # First, find the closest waypoint
         min_dist = 100000
+
         closest_index = 0
         for i, waypoint in enumerate(self.all_waypoints):
-        	dist = sqrt((self.curr_pose.position.x - waypoint.pose.pose.position.x) ** 2 + (self.curr_pose.position.y - waypoint.pose.pose.position.y) ** 2)
+        	dist = math.sqrt(((self.curr_pose.position.x - waypoint.pose.pose.position.x) ** 2) + ((self.curr_pose.position.y - waypoint.pose.pose.position.y) ** 2))
         	if (dist < min_dist):
         		min_dist = dist
         		closest_index = i
 
-        	# Then, check whether the waypoint is behind, if it is, increment the index to make sure it's ahead
-        heading = math.atan2(
-        	self.all_waypoints[closest_index].pose.pose.position.y - self.curr_pose.position.y, 
-        	self.all_waypoints[closest_index].pose.pose.position.x - self.curr_pose.position.x)
-        quaternion = (
-        	self.curr_pose.orientation.x, 
-        	self.curr_pose.orientation.y, 
-        	self.curr_pose.orientation.z, 
+        # Then, check whether the waypoint is behind, if it is, increment the index to make sure it's ahead
+   		heading = math.atan2(self.all_waypoints[closest_index].pose.pose.position.y - self.curr_pose.position.y,
+   			self.all_waypoints[closest_index].pose.pose.position.x - self.curr_pose.position.x)
+        	
+        quaternion = (self.curr_pose.orientation.x,
+        	self.curr_pose.orientation.y,
+        	self.curr_pose.orientation.z,
         	self.curr_pose.orientation.w)
-        euler = tf.transformations.euler_from_quaternion(quaternion)
-		yaw = euler[2]
-        
-        angle = abs(yaw - heading)
 
-        if angle > (math.pi / 4):        
-            closest_index += 1
+        _, _, yaw = tf.transformations.euler_from_quaternion(quaternion)
+
+        angle = abs(yaw - heading)
+        
+        if (angle > (math.pi / 4)):
+        	closest_index += 1
 
         # If closest_index is higher than no. of items in base_waypoints --> reset closest_index to 0
-        if closest_index >= len(self.all_waypoints):
+        if (closest_index >= len(self.all_waypoints)):
         	closest_index = 0
 
         # Generate the list of waypoints to be followed
@@ -132,8 +133,8 @@ class WaypointUpdater(object):
         self.final_waypoints_pub.publish(lookahead_waypoints_msg)
 
         if DEBUGGING:
-        	rospy.loginfo("lookahead_waypoints_msg published")
-
+        	rospy.logwarn("lookahead_waypoints_msg published")
+        
     def waypoints_cb(self, waypoints):
         # TODO: Implement
         # Grab the list of all waypoints from the base_waypoints message
@@ -143,7 +144,7 @@ class WaypointUpdater(object):
         self.sub_base_waypoints.unregister()
 
         if DEBUGGING:
-        	rospy.loginfo("base_waypoints loaded and unsubscribed")
+        	rospy.logwarn("base_waypoints loaded and unsubscribed")
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement

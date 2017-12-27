@@ -1,7 +1,7 @@
 from yaw_controller import YawController
 from pid import PID
 from lowpass import LowPassFilter
-
+import rospy
 
 GAS_DENSITY = 2.858
 ONE_MPH = 0.44704
@@ -32,7 +32,7 @@ class Controller(object):
         self.lowpass = LowPassFilter(3, 1)
 
         if DEBUGGING:
-            rospy.loginfo("Controller object initialized")
+            rospy.logwarn("Controller object initialized")
 
     def control(self, *args, **kwargs):
         # TODO: Change the arg, kwarg list to suit your needs
@@ -51,10 +51,14 @@ class Controller(object):
         steer = self.lowpass.filt(steer)
 
         # Note to self: implement also controllers for throttle and brake
-        throttle = 0.5
+        throttle = 0.15
         brake = 0.
 
         if DEBUGGING:
-            rospy.loginfo("Control values returned, steer =", steer, "throttle =", throttle, "brake =", brake)
+            rospy.logwarn("Control values returned")
+            rospy.logwarn("steer %s", steer)
+            print "steer =", steer
+            #ospy.loginfo('throttle =', throttle)
+            #rospy.loginfo('brake =', brake)
 
         return throttle, brake, steer

@@ -110,7 +110,7 @@ class DBWNode(object):
         # self.reset = False # Reset the "autonomous" state in case a human takes over
 
         if DEBUGGING:
-            rospy.loginfo("DBW Node initialized")
+            rospy.logwarn("DBW Node initialized")
 
         self.loop()
 
@@ -119,22 +119,22 @@ class DBWNode(object):
         self.target_linear_velocity = twist_cmd.twist.linear.x
         self.target_angular_velocity = twist_cmd.twist.angular.z
         if DEBUGGING:
-            rospy.loginfo("twist_cmd_cb called, twist_cmd =", twist_cmd)
+            print "twist_cmd_cb called, twist_cmd =", twist_cmd
 
 
     def current_velocity_cb(self, current_velocity):
         self.current_linear_velocity = current_velocity.twist.linear.x
         self.current_angular_velocity = current_velocity.twist.angular.z
         if DEBUGGING:
-            rospy.loginfo("current_velocity_cb called, current_velocity =", current_velocity)
+            print "current_velocity_cb called, current_velocity =", current_velocity
 
     def dbw_enabled_cb(self, dbw_enabled):
         self.dbw_enabled = dbw_enabled
         if DEBUGGING:
-            rospy.loginfo("dbw_enabled_cb called, dbw_enabled =", dbw_enabled)
+            print "dbw_enabled_cb called, dbw_enabled =", dbw_enabled
 
     def loop(self):
-        rate = rospy.Rate(50) # 50Hz
+        rate = rospy.Rate(50) # Changed to 10 Hz from 50Hz to avoid simulator latency issues
         while not rospy.is_shutdown():
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
             # You should only publish the control commands if dbw is enabled
