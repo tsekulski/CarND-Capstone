@@ -70,6 +70,9 @@ class WaypointUpdater(object):
         self.curr_pose = None
         self.all_waypoints = None
 
+        if DEBUGGING:
+            rospy.loginfo("Waypoint Updater Node initialized")
+
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -108,7 +111,7 @@ class WaypointUpdater(object):
         	closest_index = 0
 
         # Generate the list of waypoints to be followed
-        if (closest_index + LOOKAHEAD_WPS < len(self.all_waypoints):
+        if (closest_index + LOOKAHEAD_WPS < len(self.all_waypoints)):
         	lookahead_waypoints = self.all_waypoints[closest_index:closest_index+LOOKAHEAD_WPS]
 		# if the slice is out of bounds:
         else:
@@ -129,7 +132,7 @@ class WaypointUpdater(object):
         self.final_waypoints_pub.publish(lookahead_waypoints_msg)
 
         if DEBUGGING:
-        	rospy.loginfo("lookahead_waypoints_msg published"
+        	rospy.loginfo("lookahead_waypoints_msg published")
 
     def waypoints_cb(self, waypoints):
         # TODO: Implement
