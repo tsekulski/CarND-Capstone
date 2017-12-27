@@ -84,7 +84,7 @@ class DBWNode(object):
                                          BrakeCmd, queue_size=1)
 
         # TODO: Create `TwistController` object
-        self.controller = TwistController(
+        self.controller = Controller(
             vehicle_mass,
             fuel_capacity,
             brake_deadband,
@@ -138,7 +138,7 @@ class DBWNode(object):
         while not rospy.is_shutdown():
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
             # You should only publish the control commands if dbw is enabled
-            throttle, brake, steering = self.controller.control(
+            throttle, brake, steer = self.controller.control(
                 self.target_linear_velocity,
                 self.target_angular_velocity,
                 self.current_linear_velocity,

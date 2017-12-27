@@ -52,7 +52,7 @@ yaw = euler[2]
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 DEBUGGING = True
 TARGET_SPEED_MPH = 10
-TARGET_SPEED_MPS = TARGET_SPEED_MPH / 2.24 # Convert from mph to m/s
+TARGET_SPEED_MPS = TARGET_SPEED_MPH * 0.44704 # Convert from mph to m/s
 
 class WaypointUpdater(object):
     def __init__(self):
