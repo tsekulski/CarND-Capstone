@@ -51,7 +51,7 @@ yaw = euler[2]
 '''
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-DEBUGGING = True
+DEBUGGING = False
 TARGET_SPEED_MPH = 10
 TARGET_SPEED_MPS = TARGET_SPEED_MPH * 0.44704 # Convert from mph to m/s
 
@@ -111,6 +111,8 @@ class WaypointUpdater(object):
         if (closest_index >= len(self.all_waypoints)):
         	closest_index = 0
 
+        #rospy.logwarn("closest waypoint index %s", closest_index)
+        
         # Generate the list of waypoints to be followed
         if (closest_index + LOOKAHEAD_WPS < len(self.all_waypoints)):
         	lookahead_waypoints = self.all_waypoints[closest_index:closest_index+LOOKAHEAD_WPS]

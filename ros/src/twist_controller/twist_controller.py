@@ -2,6 +2,7 @@ from yaw_controller import YawController
 from pid import PID
 from lowpass import LowPassFilter
 import rospy
+import random
 
 GAS_DENSITY = 2.858
 ONE_MPH = 0.44704
@@ -29,7 +30,11 @@ class Controller(object):
         self.yaw_controller = YawController(self.wheel_base, self.steer_ratio, self.min_speed, self.max_lat_accel, self.max_steer_angle)
 
         # Create a LowPassFilter object - to smoothen steering angles
-        self.lowpass = LowPassFilter(3, 1)
+        self.lowpass = LowPassFilter(0.96, 1)
+
+        # Create a PID controller for throttle
+        self.pid_filter = PID(kp=2.5, ki=0.0, kd=1.2, mn=self.decel_limit, mx=self.accel_limit)
+
 
         if DEBUGGING:
             rospy.logwarn("Controller object initialized")
@@ -43,22 +48,27 @@ class Controller(object):
         self.current_linear_velocity = args[2]
         self.current_angular_velocity = args[3]
         self.dbw_enabled = args[4]
+        time_step = args[5]
 
         # Get steering angle
         steer = self.yaw_controller.get_steering(self.target_linear_velocity, self.target_angular_velocity, self.current_linear_velocity)
 
         # Smoothen steering angle
-        steer = self.lowpass.filt(steer)
+        # steer = self.lowpass.filt(steer)
 
         # Note to self: implement also controllers for throttle and brake
-        throttle = 0.15
+        #steer = -5.0
+        #throttle = 0.07 + random.randint(1,5) / 100.0
+        error = self.target_linear_velocity - self.current_linear_velocity
+        throttle = self.pid_filter.step(error, time_step)
+
+
         brake = 0.
 
         if DEBUGGING:
-            rospy.logwarn("Control values returned")
+            #rospy.logwarn("Control values returned")
             rospy.logwarn("steer %s", steer)
-            print "steer =", steer
-            #ospy.loginfo('throttle =', throttle)
-            #rospy.loginfo('brake =', brake)
+            rospy.logwarn("throttle %s", throttle)
+            #rospy.logwarn("brake %s", brake)
 
         return throttle, brake, steer
