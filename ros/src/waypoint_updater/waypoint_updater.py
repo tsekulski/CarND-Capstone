@@ -59,8 +59,8 @@ class WaypointUpdater(object):
     def __init__(self):
         rospy.init_node('waypoint_updater')
 
-        self.sub_current_pose = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        self.sub_base_waypoints = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        self.sub_current_pose = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb, queue_size = 1)
+        self.sub_base_waypoints = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb, queue_size = 1)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
 
@@ -86,7 +86,7 @@ class WaypointUpdater(object):
 
         closest_index = 0
         for i, waypoint in enumerate(self.all_waypoints):
-        	dist = math.sqrt(((self.curr_pose.position.x - waypoint.pose.pose.position.x) ** 2) + ((self.curr_pose.position.y - waypoint.pose.pose.position.y) ** 2))
+        	dist = math.sqrt((self.curr_pose.position.x - waypoint.pose.pose.position.x) ** 2 + (self.curr_pose.position.y - waypoint.pose.pose.position.y) ** 2)
         	if (dist < min_dist):
         		min_dist = dist
         		closest_index = i
