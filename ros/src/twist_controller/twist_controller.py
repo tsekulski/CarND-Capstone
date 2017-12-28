@@ -23,17 +23,17 @@ class Controller(object):
         self.max_steer_angle = args[9]
 
         # Define minimum speed for the YawController - my understanding is that this is simply to ensure that the car is not steering when it's not moving
-        self.min_speed = 0.1 # m/s
+        self.min_speed = 0. # m/s
 
 
         # Createa a YawController object - to be used to generate steering values
         self.yaw_controller = YawController(self.wheel_base, self.steer_ratio, self.min_speed, self.max_lat_accel, self.max_steer_angle)
 
         # Create a LowPassFilter object - to smoothen steering angles
-        self.lowpass = LowPassFilter(0.96, 1)
+        # self.lowpass = LowPassFilter(0.96, 1)
 
         # Create a PID controller for throttle
-        self.pid_filter = PID(kp=2.5, ki=0.0, kd=1.2, mn=self.decel_limit, mx=self.accel_limit)
+        self.pid_filter = PID(kp=2.6, ki=0.0, kd=1.3, mn=self.decel_limit, mx=self.accel_limit)
 
 
         if DEBUGGING:
@@ -43,15 +43,15 @@ class Controller(object):
         # TODO: Change the arg, kwarg list to suit your needs
         # Return throttle, brake, steer
 
-        self.target_linear_velocity = args[0]
-        self.target_angular_velocity = args[1]
-        self.current_linear_velocity = args[2]
-        self.current_angular_velocity = args[3]
-        self.dbw_enabled = args[4]
-        time_step = args[5]
+        target_linear_velocity = args[0]
+        target_angular_velocity = args[1]
+        current_linear_velocity = args[2]
+        current_angular_velocity = args[3]
+        dbw_enabled = args[4]
+        time_diff = args[5]
 
         # Get steering angle
-        steer = self.yaw_controller.get_steering(self.target_linear_velocity, self.target_angular_velocity, self.current_linear_velocity)
+        steer = self.yaw_controller.get_steering(target_linear_velocity, target_angular_velocity, current_linear_velocity)
 
         # Smoothen steering angle
         # steer = self.lowpass.filt(steer)
@@ -59,9 +59,8 @@ class Controller(object):
         # Note to self: implement also controllers for throttle and brake
         #steer = -5.0
         #throttle = 0.07 + random.randint(1,5) / 100.0
-        error = self.target_linear_velocity - self.current_linear_velocity
-        throttle = self.pid_filter.step(error, time_step)
-
+        error = target_linear_velocity - current_linear_velocity
+        throttle = self.pid_filter.step(error, time_diff)
 
         brake = 0.
 

@@ -59,7 +59,7 @@ Throttle and brake controller:
 First partial step: Implement steering control, for throttle and brake just publish hardcoded values to test whether everything works.
 '''
 
-DEBUGGING = False
+DEBUGGING = True
 
 class DBWNode(object):
     def __init__(self):
@@ -109,9 +109,7 @@ class DBWNode(object):
         self.dbw_enabled = False
         # self.reset = False # Reset the "autonomous" state in case a human takes over
 
-        #############
         self.previous_time = rospy.get_time()
-        #############
 
         if DEBUGGING:
             rospy.logwarn("DBW Node initialized")
@@ -147,7 +145,7 @@ class DBWNode(object):
             # You should only publish the control commands if dbw is enabled
             #############
             current_time = rospy.get_time()
-            time_step = current_time - self.previous_time
+            time_diff = current_time - self.previous_time
             self.previous_time = current_time
             #############
 
@@ -157,7 +155,7 @@ class DBWNode(object):
                 self.current_linear_velocity,
                 self.current_angular_velocity,
                 self.dbw_enabled,
-                time_step)
+                time_diff)
 
             if self.dbw_enabled:
                 self.publish(throttle, brake, steer)
