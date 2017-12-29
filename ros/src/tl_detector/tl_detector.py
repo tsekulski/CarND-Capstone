@@ -11,7 +11,12 @@ import tf
 import cv2
 import yaml
 
+###### Dump traffic light images to use as training data set ######
+import os
+###### EO dump traffic light images ######
+
 STATE_COUNT_THRESHOLD = 3
+DEBUGGING = True
 
 class TLDetector(object):
     def __init__(self):
@@ -22,8 +27,8 @@ class TLDetector(object):
         self.camera_image = None
         self.lights = []
 
-        sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb, queue_size = 1)
+        sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb, queue_size = 1)
 
         '''
         /vehicle/traffic_lights provides you with the location of the traffic light in 3D map space and
@@ -32,8 +37,8 @@ class TLDetector(object):
         simulator. When testing on the vehicle, the color state will not be available. You'll need to
         rely on the position of the light and the camera image to predict it.
         '''
-        sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
-        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
+        sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb, queue_size = 1)
+        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb, queue_size = 1)
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
@@ -48,6 +53,13 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+
+        ###### Dump traffic light images to use as training data set ######
+        self.img_count = 0
+        ###### EO dump traffic light images ######
+
+        if DEBUGGING:
+            rospy.logwarn("TLDetector object initialized")
 
         rospy.spin()
 
@@ -78,6 +90,20 @@ class TLDetector(object):
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
+
+        ###### Dump traffic light images to use as training data set ######
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        file_name = 'sim_img_{:>05}.png'.format(self.img_count)
+        rospy.logwarn("file_name = %s", file_name)
+        dirname1 = '/home/student/simulator_images'
+        dirname2 = '~/simulator_images'
+        #cv2.imwrite(os.path.join(dirname, file_name), cv_image)
+        #cv2.imwrite("home/student/simulator_images"+file_name, cv_image)
+        cv2.imwrite("~/simulator_images"+file_name, cv_image)
+        rospy.logwarn("Image saved, img number = %s", self.img_count)
+        self.img_count += 1
+        ###### EO dump traffic light images ######
+
         if self.state != state:
             self.state_count = 0
             self.state = state

@@ -59,7 +59,7 @@ Throttle and brake controller:
 First partial step: Implement steering control, for throttle and brake just publish hardcoded values to test whether everything works.
 '''
 
-DEBUGGING = True
+DEBUGGING = False
 
 class DBWNode(object):
     def __init__(self):

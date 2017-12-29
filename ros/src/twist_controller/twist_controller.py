@@ -6,7 +6,7 @@ import random
 
 GAS_DENSITY = 2.858
 ONE_MPH = 0.44704
-DEBUGGING = True
+DEBUGGING = False
 
 class Controller(object):
     def __init__(self, *args, **kwargs):
