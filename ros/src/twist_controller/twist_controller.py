@@ -30,7 +30,8 @@ class Controller(object):
         self.yaw_controller = YawController(self.wheel_base, self.steer_ratio, self.min_speed, self.max_lat_accel, self.max_steer_angle)
 
         # Create a LowPassFilter object - to smoothen steering angles
-        self.lowpass = LowPassFilter(0.96, 1)
+        self.lowpass_steer = LowPassFilter(0.96, 1)
+        self.lowpass_throttle = LowPassFilter(0.96, 1)
 
         # Create a PID controller for throttle
         self.pid_filter = PID(kp=2.6, ki=0.0, kd=1.3, mn=self.decel_limit, mx=self.accel_limit)
@@ -50,24 +51,48 @@ class Controller(object):
         dbw_enabled = args[4]
         time_diff = args[5]
 
+        if not dbw_enabled:
+        	self.pid_filter.reset()
+        	#rospy.logwarn("Manual control!")
+
         # Get steering angle
         steer = self.yaw_controller.get_steering(target_linear_velocity, target_angular_velocity, current_linear_velocity)
 
         # Smoothen steering angle
-        steer = self.lowpass.filt(steer)
+        steer = self.lowpass_steer.filt(steer)
 
         # Note to self: implement also controllers for throttle and brake
         #steer = -5.0
         #throttle = 0.07 + random.randint(1,5) / 100.0
         error = target_linear_velocity - current_linear_velocity
         throttle = self.pid_filter.step(error, time_diff)
+        throttle = self.lowpass_throttle.filt(throttle)
+        brake = 0.0
 
-        brake = 0.
+        if (target_linear_velocity < 0.1):
+        	throttle = 0.0
+        	brake = 1.0
+
+        	'''
+        	if (throttle > 0):
+        		brake = 0
+        	else:
+        		decceleration = throttle * (-1)
+        		throttle = 0
+        		if (decceleration < self.brake_deadband):
+        			decceleration = 0
+        		brake = decceleration * (self.vehicle_mass + self.fuel_capacity * GAS_DENSITY) * self.wheel_radius
+
+        	# Make sure that the car comes to a full stop when needed
+        	if (target_linear_velocity == 0) and (current_linear_velocity - target_linear_velocity < 0.3):
+        		throttle = 0.0
+        		brake = 1.0
+        	'''
 
         if DEBUGGING:
             #rospy.logwarn("Control values returned")
             rospy.logwarn("steer %s", steer)
             rospy.logwarn("throttle %s", throttle)
-            #rospy.logwarn("brake %s", brake)
+            rospy.logwarn("brake %s", brake)
 
         return throttle, brake, steer

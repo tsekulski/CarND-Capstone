@@ -3,6 +3,7 @@
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
+from std_msgs.msg import Int32
 
 import math
 import tf
@@ -50,6 +51,17 @@ yaw = euler[2]
 
 '''
 
+'''
+TODO:
+Make sure that dbw_enabled / switching between manual and autonomous works seamlessly
+Make sure that the car stops exactly at the stop line (set decreasing target speeds + proper application of brake and throttle)
+Revisit throttle / brake calculation and use of PID filters
+Check edge cases - what if the traffic light is very close and suddenly changes color? (either ignore or apply very strong brake)
+Switch from distance from red light measured in "waypoints" to measured in meters
+Why is throttle sometimes negative? (probably because target speed is exceeded)
+What are the reasonable brake values
+'''
+
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 DEBUGGING = False
 TARGET_SPEED_MPH = 10
@@ -63,6 +75,7 @@ class WaypointUpdater(object):
         self.sub_base_waypoints = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb, queue_size = 1)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
+        self.sub_traffic_waypoint = rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb, queue_size = 1)
 
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
@@ -70,6 +83,7 @@ class WaypointUpdater(object):
         # TODO: Add other member variables you need below
         self.curr_pose = None
         self.all_waypoints = None
+        self.red_light_waypoint_index = None
 
         if DEBUGGING:
             rospy.logwarn("Waypoint Updater Node initialized")
@@ -121,9 +135,26 @@ class WaypointUpdater(object):
         	lookahead_waypoints = self.all_waypoints[closest_index:] + self.all_waypoints[:(closest_index+LOOKAHEAD_WPS - len(self.all_waypoints))] 
         
         # Set target speed per waypoint
-        for waypoint in lookahead_waypoints:
-        	waypoint.twist.twist.linear.x = TARGET_SPEED_MPS
-        	# This will need to be expanded once traffic lights are recognized
+        # First just see whether the car deccelerates / stops if the traffic light ahead is red
+        waypoints_from_red_light = 100
+        if (self.red_light_waypoint_index and (abs(self.red_light_waypoint_index.data - closest_index) <= waypoints_from_red_light)):
+        	for waypoint in lookahead_waypoints:
+        		waypoint.twist.twist.linear.x = 0
+        else:
+        	for waypoint in lookahead_waypoints:
+        		waypoint.twist.twist.linear.x = TARGET_SPEED_MPS
+
+
+        '''
+        # If there is a red light ahead and if it's closer than x = 20 waypoints ahead, then start deccelerating
+        waypoints_from_red_light = 200
+        if (self.red_light_waypoint_index and (abs(self.red_light_waypoint_index.data - closest_index) <= waypoints_from_red_light)):
+        	#dist_from_red_light = self.distance(self.all_waypoints, self.red_light_waypoint_index, closest_index)
+        	#First let's try with just setting speed to 0:
+        	for waypoint in lookahead_waypoints:
+        		waypoint.twist.twist.linear.x = 0
+        	# This will need to be expanded
+        '''
 
         # Generate the message with the list of waypoints to be followed
         lookahead_waypoints_msg = Lane()
@@ -150,7 +181,10 @@ class WaypointUpdater(object):
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
-        pass
+        if (msg != -1):
+        	self.red_light_waypoint_index = msg
+        else:
+        	self.red_light_waypoint_index = None
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
