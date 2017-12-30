@@ -15,6 +15,56 @@ import yaml
 import os
 ###### EO dump traffic light images ######
 
+'''
+Expected call flow (my understanding):
+1. Get car position, all_waypoints (indexes and positions), traffic_light stop line positions, traffic light positions, traffic light state [DONE]
+2. Find the nearest visible traffic light ahead of the vehicle by:
+a) using car position and traffic lights stop line positions... 
+    self.pose.position.x / self.pose.position.y vs. stop_line_positions[i][0], stop_line_positions[i][1]
+b) ...to get the closest waypoint to both car position and traffic light stop lines (this can probably be done only once)
+    self.waypoints[i].pose.pose.position.x / self.waypoints[i].pose.pose.position.y vs. self.pose.position.x / self.pose.position.y
+    self.waypoints[i].pose.pose.position.x / self.waypoints[i].pose.pose.position.y vs. stop_line_positions[i][0], stop_line_positions[i][1]
+c) ...at this stage I have following waypoint indices:
+    self.waypoints[closest to car]
+    self.waypoints[closest to the nearest stop line]
+3. Match the identified closest stop line with the traffic light position (how? this is not the same as stop line position - again by using closest waypoint?)
+    self.waypoints[closest to the nearest stop line].pose.pose.position.x, self.waypoints[closest to the nearest stop line].pose.pose.position.y 
+    vs. self.lights[i].pose.pose.position.x, self.lights[i].pose.pose.position.y
+4. Get the state for the identified traffic light position
+   self.lights[i].state
+5. If the state is red (==0), publish the index of the waypoint nearest to the stop line
+   self_waypoints[self.waypoints[closest to the nearest stop line]
+(Afterwards, further steps take place in waypoint_updater.py)
+
+Format of the lights message:
+[WARN] [1514639792.430531]: First traffic light position & state
+header: 
+  seq: 0
+  stamp: 
+    secs: 1514639792
+    nsecs: 424350976
+  frame_id: /world
+pose: 
+  header: 
+    seq: 0
+    stamp: 
+      secs: 1514639792
+      nsecs: 424360036
+    frame_id: /world
+  pose: 
+    position: 
+      x: 1172.183
+      y: 1186.299
+      z: 5.576891
+    orientation: 
+      x: 0.0
+      y: 0.0
+      z: 0.00061619942315
+      w: 0.999999810149
+state: 0
+
+'''
+
 STATE_COUNT_THRESHOLD = 3
 DEBUGGING = True
 
@@ -55,8 +105,16 @@ class TLDetector(object):
         self.state_count = 0
 
         ###### Dump traffic light images to use as training data set ######
-        self.img_count = 0
+        self.img_count = 0  
         ###### EO dump traffic light images ######
+
+        ###### Take a look at traffic light stop line positions ######
+        stop_line_positions = self.config['stop_line_positions']
+        rospy.logwarn("Position of the stop line for light no. 1 = %s", stop_line_positions[0])
+        rospy.logwarn("Position of the stop line for light no. 2 = %s", stop_line_positions[1])
+        rospy.logwarn("Number of traffic light stop_line_positions = %s", len(stop_line_positions))
+        ###### EO Take a look at traffic light stop line positions ######
+
 
         if DEBUGGING:
             rospy.logwarn("TLDetector object initialized")
@@ -67,10 +125,19 @@ class TLDetector(object):
         self.pose = msg
 
     def waypoints_cb(self, waypoints):
-        self.waypoints = waypoints
+        # Grab the list of all waypoints from the base_waypoints message
+        self.waypoints = waypoints.waypoints
+
+        # Unsubscribe since this list is published only once
+        #self.sub2.unregister()
+
+        if DEBUGGING:
+            rospy.logwarn("base_waypoints loaded and unsubscribed")
 
     def traffic_cb(self, msg):
         self.lights = msg.lights
+        rospy.logwarn("First traffic light position: %s", self.lights[0].pose.pose.position)
+        rospy.logwarn("First traffic light state: %s", self.lights[0].state)
 
     def image_cb(self, msg):
         """Identifies red lights in the incoming camera image and publishes the index
@@ -91,6 +158,7 @@ class TLDetector(object):
         used.
         '''
 
+        '''
         ###### Dump traffic light images to use as training data set ######
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
         file_name = 'sim_img_{:>05}.png'.format(self.img_count)
@@ -103,6 +171,7 @@ class TLDetector(object):
         rospy.logwarn("Image saved, img number = %s", self.img_count)
         self.img_count += 1
         ###### EO dump traffic light images ######
+        '''
 
         if self.state != state:
             self.state_count = 0
