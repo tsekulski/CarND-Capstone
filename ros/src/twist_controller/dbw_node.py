@@ -59,7 +59,7 @@ Throttle and brake controller:
 First partial step: Implement steering control, for throttle and brake just publish hardcoded values to test whether everything works.
 '''
 
-DEBUGGING = False
+DEBUGGING = True
 
 class DBWNode(object):
     def __init__(self):
@@ -97,9 +97,9 @@ class DBWNode(object):
             max_steer_angle)
 
         # TODO: Subscribe to all the topics you need to
-        self.sub_twist_cmd = rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb)
-        self.sub_current_velocity = rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb)
-        self.sub_dbw_enabled = rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb)
+        self.sub_twist_cmd = rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb, queue_size = 1)
+        self.sub_current_velocity = rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size = 1)
+        self.sub_dbw_enabled = rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb, queue_size = 1)
 
         # Create variables to store the latest state coming from the subscriptions
         self.target_linear_velocity = 0.
@@ -121,20 +121,20 @@ class DBWNode(object):
         self.target_linear_velocity = twist_cmd.twist.linear.x
         self.target_angular_velocity = twist_cmd.twist.angular.z
         if DEBUGGING:
-            rospy.logwarn("twist_cmd_cb called")
+            #rospy.logwarn("twist_cmd_cb called")
             rospy.logwarn("target_linear_velocity = %s", self.target_linear_velocity)
-            rospy.logwarn("target_angular_velocity = %s", self.target_angular_velocity)
+            #rospy.logwarn("target_angular_velocity = %s", self.target_angular_velocity)
 
     def current_velocity_cb(self, current_velocity):
         self.current_linear_velocity = current_velocity.twist.linear.x
         self.current_angular_velocity = current_velocity.twist.angular.z
         if DEBUGGING:
-            rospy.logwarn("current_velocity_cb called")
+            #rospy.logwarn("current_velocity_cb called")
             rospy.logwarn("current_linear_velocity = %s", self.current_linear_velocity)
-            rospy.logwarn("current_angular_velocity = %s", self.current_angular_velocity)
+            #rospy.logwarn("current_angular_velocity = %s", self.current_angular_velocity)
 
     def dbw_enabled_cb(self, dbw_enabled):
-        self.dbw_enabled = dbw_enabled
+        self.dbw_enabled = dbw_enabled.data
         if DEBUGGING:
             rospy.logwarn("dbw_enabled_cb called, dbw_enabled = %s", dbw_enabled)
 

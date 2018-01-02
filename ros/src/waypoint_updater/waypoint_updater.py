@@ -136,10 +136,27 @@ class WaypointUpdater(object):
         
         # Set target speed per waypoint
         # First just see whether the car deccelerates / stops if the traffic light ahead is red
-        waypoints_from_red_light = 100
-        if (self.red_light_waypoint_index and (abs(self.red_light_waypoint_index.data - closest_index) <= waypoints_from_red_light)):
-        	for waypoint in lookahead_waypoints:
-        		waypoint.twist.twist.linear.x = 0
+        min_waypoints_from_red_light = 100
+        if self.red_light_waypoint_index:
+        	wps_from_red_light = abs(self.red_light_waypoint_index - closest_index)
+        	rospy.logwarn("wps_from_red_light = %s", wps_from_red_light)
+        	if (wps_from_red_light <= min_waypoints_from_red_light):
+        		if (wps_from_red_light > 0):
+        			speed_decrease_per_wp = TARGET_SPEED_MPS / wps_from_red_light
+        		else:
+        			speed_decrease_per_wp = TARGET_SPEED_MPS
+        		rospy.logwarn("speed_decrease_per_wp = %s", speed_decrease_per_wp)
+
+        		counter = 1 # start decelerating a bit earlier than if counter == 0
+        		for i, waypoint in enumerate(lookahead_waypoints):
+        			counter += 1
+        			if (TARGET_SPEED_MPS - counter*speed_decrease_per_wp > 0):
+        				waypoint.twist.twist.linear.x = min(TARGET_SPEED_MPS - counter*speed_decrease_per_wp, 1.0) #don't go faster than 1.0 m/s if there is a red light ahead
+        			else:
+        				waypoint.twist.twist.linear.x = 0
+        	else:
+        		for waypoint in lookahead_waypoints:
+        			waypoint.twist.twist.linear.x = TARGET_SPEED_MPS
         else:
         	for waypoint in lookahead_waypoints:
         		waypoint.twist.twist.linear.x = TARGET_SPEED_MPS
@@ -181,8 +198,8 @@ class WaypointUpdater(object):
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
-        if (msg != -1):
-        	self.red_light_waypoint_index = msg
+        if (msg.data != -1):
+        	self.red_light_waypoint_index = msg.data
         else:
         	self.red_light_waypoint_index = None
 

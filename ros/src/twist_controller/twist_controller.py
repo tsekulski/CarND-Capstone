@@ -30,11 +30,11 @@ class Controller(object):
         self.yaw_controller = YawController(self.wheel_base, self.steer_ratio, self.min_speed, self.max_lat_accel, self.max_steer_angle)
 
         # Create a LowPassFilter object - to smoothen steering angles
-        self.lowpass_steer = LowPassFilter(0.96, 1)
-        self.lowpass_throttle = LowPassFilter(0.96, 1)
+        self.lowpass_steer = LowPassFilter(1, 1)
+        self.lowpass_throttle = LowPassFilter(1, 1)
 
         # Create a PID controller for throttle
-        self.pid_filter = PID(kp=2.6, ki=0.0, kd=1.3, mn=self.decel_limit, mx=self.accel_limit)
+        self.pid_filter = PID(kp=2.0, ki=0.4, kd=0.1, mn=self.decel_limit, mx=self.accel_limit)
 
 
         if DEBUGGING:
@@ -65,13 +65,22 @@ class Controller(object):
         #steer = -5.0
         #throttle = 0.07 + random.randint(1,5) / 100.0
         error = target_linear_velocity - current_linear_velocity
-        throttle = self.pid_filter.step(error, time_diff)
-        throttle = self.lowpass_throttle.filt(throttle)
-        brake = 0.0
+        acceleration = self.pid_filter.step(error, time_diff)
+        acceleration = self.lowpass_throttle.filt(acceleration)
 
-        if (target_linear_velocity < 0.1):
-        	throttle = 0.0
-        	brake = 1.0
+        if acceleration > 0.0:
+            throttle = acceleration
+            brake = 0.0
+        else:
+            throttle = 0.0
+            if acceleration > self.brake_deadband:
+                brake = 0.0
+            else:
+            	brake = (-1) * (self.vehicle_mass + self.fuel_capacity * GAS_DENSITY) * acceleration * self.wheel_radius
+
+        #if (target_linear_velocity < 0.1):
+        #	throttle = 0.0
+        #	brake = 1.0
 
         	'''
         	if (throttle > 0):
