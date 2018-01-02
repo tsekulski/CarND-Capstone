@@ -136,6 +136,40 @@ class WaypointUpdater(object):
         
         # Set target speed per waypoint
         # First just see whether the car deccelerates / stops if the traffic light ahead is red
+
+        min_waypoints_from_red_light = 100
+        if self.red_light_waypoint_index:
+        	wps_from_red_light = abs(self.red_light_waypoint_index - closest_index)
+        	rospy.logwarn("wps_from_red_light = %s", wps_from_red_light)
+        	if (wps_from_red_light <= min_waypoints_from_red_light):
+        		if (wps_from_red_light > 0):
+        			dist_from_rl = self.distance(self.all_waypoints, closest_index, self.red_light_waypoint_index)
+        			for i, waypoint in enumerate(lookahead_waypoints, 0):
+        				if ((wps_from_red_light - i - 2) > 0 and (dist_from_rl > 0)): # -/+2 here and below due to latency issues..
+        					curr_dist = self.distance(self.all_waypoints, closest_index + i + 2, self.red_light_waypoint_index)
+        					waypoint.twist.twist.linear.x = TARGET_SPEED_MPS *(curr_dist / dist_from_rl)
+        				else:
+        					waypoint.twist.twist.linear.x = 0
+        		else:
+        			for waypoint in lookahead_waypoints:
+        				waypoint.twist.twist.linear.x = 0
+        	else:
+        		for waypoint in lookahead_waypoints:
+        			waypoint.twist.twist.linear.x = TARGET_SPEED_MPS
+        else:
+        	for waypoint in lookahead_waypoints:
+        		waypoint.twist.twist.linear.x = TARGET_SPEED_MPS
+        
+
+        '''
+
+        ###########
+        min_dist_from_rl = TARGET_SPEED_MPS * 100 # min dist from red light in m
+        if self.red_light_waypoint_index:
+        	dist_from_rl = distance(self.all_waypoints, closest_index, self.red_light_waypoint_index)
+        	rospy.logwarn("dist_from_red_light = %s", dist_from_rl)
+        	if (dist_from_rl <= min_dist_from_rl):
+        ###########
         min_waypoints_from_red_light = 100
         if self.red_light_waypoint_index:
         	wps_from_red_light = abs(self.red_light_waypoint_index - closest_index)
@@ -160,6 +194,7 @@ class WaypointUpdater(object):
         else:
         	for waypoint in lookahead_waypoints:
         		waypoint.twist.twist.linear.x = TARGET_SPEED_MPS
+       	'''
 
 
         '''
