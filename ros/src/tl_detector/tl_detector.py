@@ -68,7 +68,7 @@ state: 0
 '''
 
 STATE_COUNT_THRESHOLD = 3
-DEBUGGING = True
+DEBUGGING = False
 
 class TLDetector(object):
     def __init__(self):
@@ -161,20 +161,19 @@ class TLDetector(object):
         used.
         '''
 
-        '''
+      
         ###### Dump traffic light images to use as training data set ######
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
         file_name = 'sim_img_{:>05}.png'.format(self.img_count)
         rospy.logwarn("file_name = %s", file_name)
-        dirname1 = '/home/student/simulator_images'
-        dirname2 = '~/simulator_images'
+        #dirname1 = '/home/student/simulator_images'
+        #dirname2 = '~/simulator_images'
         #cv2.imwrite(os.path.join(dirname, file_name), cv_image)
         #cv2.imwrite("home/student/simulator_images"+file_name, cv_image)
-        cv2.imwrite("~/simulator_images"+file_name, cv_image)
+        cv2.imwrite("/home/student/simulator_images/"+file_name, cv_image)
         rospy.logwarn("Image saved, img number = %s", self.img_count)
         self.img_count += 1
         ###### EO dump traffic light images ######
-        '''
 
         if self.state != state:
             self.state_count = 0
