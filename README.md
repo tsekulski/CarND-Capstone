@@ -23,7 +23,7 @@ The following is a system architecture diagram showing the ROS nodes and topics 
 
 #### Perception module
 * The implementation of the traffic light detection node can be found [here](../master/ros/src/tl_detector/tl_detector.py)
-* A deep neural network model architecture for traffic light classification - written in Keras - can be found here. The model was trained on dumped simulator images. I will probably need to rewrite and retrain the model using Tensorflow, since Keras is not supported by the Carla simulation environment.
+* A deep neural network model architecture for traffic light classification - written in Keras - can be found [here](../master/traffic_light_classifier). The model was trained on dumped simulator images. I will probably need to rewrite and retrain the model using Tensorflow, since Keras is not supported by the Carla simulation environment.
 * The implementation of the traffic light classification node is currently in progress, code skeleton can be found [here](../master/ros/src/tl_detector/light_classification/tl_classifier.py). Once the final model is trained, this code will make a call to that final traffic light classification model.
 
 ### Results
