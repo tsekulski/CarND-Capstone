@@ -1,3 +1,42 @@
+# **Self-Driving Car: System Integration Project** 
+
+### Introduction
+
+For this project, I wrote ROS nodes to implement selected core functionality of the autonomous vehicle system:
+* Perception module: traffic light detection node (implemented),  traffic light classification node (work-in-progress, see below)
+* Planning module: waypoint updater node (implemented), the purpose of which is to derive and set target velocities per waypoint
+* Control module: drive-by-wire node (implemented), which computes and sets the steering angle, throttle and brake values
+
+The nodes communicate with each other using ROS pub/sub architecture. I tested my code using a simulator.
+
+The following is a system architecture diagram showing the ROS nodes and topics used in the project.
+
+![System Architecture Diagram](final-project-ros-graph-v2.png)
+
+### Implementation details
+
+#### Planning module
+* The implementation of the waypoint updater node can be found [here](../master/ros/src/waypoint_updater/waypoint_updater.py)
+
+#### Control module:
+* The implementation of the drive-by-wire node can be found [here](../master/ros/src/twist_controller/dbw_node.py) and [here](../master/ros/src/twist_controller/twist_controller.py)
+
+#### Perception module
+* The implementation of the traffic light detection node can be found [here](../master/ros/src/tl_detector/tl_detector.py)
+* A deep neural network model architecture for traffic light classification - written in Keras - can be found here. The model was trained on dumped simulator images. I will probably need to rewrite and retrain the model using Tensorflow, since Keras is not supported by the Carla simulation environment.
+* The implementation of the traffic light classification node is currently in progress, code skeleton can be found [here](../master/ros/src/tl_detector/light_classification/tl_classifier.py). Once the final model is trained, this code will make a call to that final traffic light classification model.
+
+### Results
+
+The car can successfully drive around the simulation track. The car follows the waypoints closely, keeps the target speed of 10 mph and stops at a stop line when the traffic light ahead is red.
+
+The implementation is largely complete in terms of functionality. The key extra functionality I would like to add is the integration of the Keras (or Tensorflow) DNN model to classify traffic light colors. Currently the system uses traffic light states passed from the simulator - this information is obviously not available in a real self-driving car. It should be provided by an in-built traffic light classifier.
+
+This was a very large project and I focused mainly on getting the required functionality implemented per node and integrating the nodes with one another. Therefore, the code might need some refactoring to become more concise and efficient. 
+
+
+### ************************** ORIGINAL UDACITY REPO README BELOW **************************
+
 This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
 
 Please use **one** of the two installation options, either native **or** docker installation.
