@@ -30,7 +30,7 @@ The following is a system architecture diagram showing the ROS nodes and topics 
 
 The car can successfully drive around the simulation track. The car follows the waypoints closely, keeps the target speed of 10 mph and stops at a stop line when the traffic light ahead is red.
 
-The implementation is largely complete in terms of functionality. The key extra functionality I would like to add is the integration of the Keras (or Tensorflow) DNN model to classify traffic light colors. Currently the system uses traffic light states passed from the simulator - this information is obviously not available in a real self-driving car. It should be provided by an in-built traffic light classifier.
+The implementation is largely complete in terms of functionality. The key extra functionality I would like to add is the integration of the Keras (or Tensorflow) DNN model to classify traffic light colors. Currently the system uses traffic light states passed from the simulator - this information is obviously not available in a real self-driving car. It should be provided by an in-built traffic light classifier. As mentioned above, I trained the first version of the traffic light classifier in Keras, but didn't yet have time to integrate it with the system.
 
 Potentially, some fine-tuning might be required for the "edge cases" such as when a car is very close to the traffic light and it turns yellow/red. Currently the car only reacts to the red lights and ignores yellow lights.
 
