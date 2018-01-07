@@ -1,5 +1,7 @@
 # **Self-Driving Car: System Integration Project** 
 
+#### Individual submission | Tomasz Sekulski | tomasz.sekulski[at]gmail.com
+
 ### Introduction
 
 For this project, I wrote ROS nodes to implement selected core functionality of the autonomous vehicle system:
