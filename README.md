@@ -32,8 +32,13 @@ The car can successfully drive around the simulation track. The car follows the 
 
 The implementation is largely complete in terms of functionality. The key extra functionality I would like to add is the integration of the Keras (or Tensorflow) DNN model to classify traffic light colors. Currently the system uses traffic light states passed from the simulator - this information is obviously not available in a real self-driving car. It should be provided by an in-built traffic light classifier.
 
-This was a very large project and I focused mainly on getting the required functionality implemented per node and integrating the nodes with one another. Therefore, the code might need some refactoring to become more concise and efficient. 
+Potentially, some fine-tuning might be required for the "edge cases" such as when a car is very close to the traffic light and it turns yellow/red. Currently the car only reacts to the red lights and ignores yellow lights.
 
+This was a large project and I focused mainly on getting the required functionality implemented per node and integrating the nodes with one another. Therefore, the code might need some refactoring to become more concise and efficient. 
+
+***
+***
+***
 
 ### ************************** ORIGINAL UDACITY REPO README BELOW **************************
 
