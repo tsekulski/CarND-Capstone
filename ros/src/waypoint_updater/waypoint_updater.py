@@ -140,7 +140,7 @@ class WaypointUpdater(object):
         min_waypoints_from_red_light = 100
         if self.red_light_waypoint_index:
         	wps_from_red_light = abs(self.red_light_waypoint_index - closest_index)
-        	rospy.logwarn("wps_from_red_light = %s", wps_from_red_light)
+        	#rospy.logwarn("wps_from_red_light = %s", wps_from_red_light)
         	if (wps_from_red_light <= min_waypoints_from_red_light):
         		if (wps_from_red_light > 0):
         			dist_from_rl = self.distance(self.all_waypoints, closest_index, self.red_light_waypoint_index)

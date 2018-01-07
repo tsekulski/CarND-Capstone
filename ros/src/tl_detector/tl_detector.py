@@ -152,7 +152,7 @@ class TLDetector(object):
         """
         self.has_image = True
         self.camera_image = msg
-        light_wp, state = self.process_traffic_lights()
+        light_wp, state, dist_from_tl = self.process_traffic_lights()
 
         '''
         Publish upcoming red lights at camera frequency.
@@ -161,19 +161,33 @@ class TLDetector(object):
         used.
         '''
 
-      
+        '''
         ###### Dump traffic light images to use as training data set ######
+        #UNKNOWN=4
+        #GREEN=2
+        #YELLOW=1
+        #RED=0
+
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
-        file_name = 'sim_img_{:>05}.png'.format(self.img_count)
+        
+        if (dist_from_tl < 200):
+            if (state == 0):
+                file_name = 'sim_img_{:>05}_RED.png'.format(self.img_count)
+            elif (state == 1):
+                file_name = 'sim_img_{:>05}_YELLOW.png'.format(self.img_count)
+            elif (state == 2):
+                file_name = 'sim_img_{:>05}_GREEN.png'.format(self.img_count)
+            else:
+                file_name = 'sim_img_{:>05}_UNKNOWN.png'.format(self.img_count)
+        else:
+            file_name = 'sim_img_{:>05}_UNKNOWN.png'.format(self.img_count)
+        
         rospy.logwarn("file_name = %s", file_name)
-        #dirname1 = '/home/student/simulator_images'
-        #dirname2 = '~/simulator_images'
-        #cv2.imwrite(os.path.join(dirname, file_name), cv_image)
-        #cv2.imwrite("home/student/simulator_images"+file_name, cv_image)
         cv2.imwrite("/home/student/simulator_images/"+file_name, cv_image)
         rospy.logwarn("Image saved, img number = %s", self.img_count)
         self.img_count += 1
         ###### EO dump traffic light images ######
+        '''
 
         if self.state != state:
             self.state_count = 0
@@ -306,6 +320,8 @@ class TLDetector(object):
                 min_dist = dist
                 stop_line_index = i
 
+        dist_from_tl = min_dist
+
         # Then, check whether the stop line is behind, if it is, increment the index to make sure it's ahead
         heading = math.atan2(stop_line_positions[stop_line_index][1] - self.pose.position.y,
             stop_line_positions[stop_line_index][0] - self.pose.position.x)
@@ -321,6 +337,7 @@ class TLDetector(object):
         
         if (angle > (math.pi / 4)):
             stop_line_index += 1
+            dist_from_tl = 100000
 
         # If closest_index is higher than no. of items in base_waypoints --> reset closest_index to 0
         if (stop_line_index >= len(stop_line_positions)):
@@ -357,9 +374,9 @@ class TLDetector(object):
                 rospy.logwarn("Waypoint closest to car = %s", car_position)
                 rospy.logwarn("Waypoint closest to nearest traffic light = %s", light_wp)
                 rospy.logwarn("Traffic light state = %s", state)
-            return light_wp, state
+            return light_wp, state, dist_from_tl
         self.waypoints = None
-        return -1, TrafficLight.UNKNOWN
+        return -1, TrafficLight.UNKNOWN, None
 
 if __name__ == '__main__':
     try:
