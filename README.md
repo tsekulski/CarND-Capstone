@@ -1,5 +1,7 @@
 # **Self-Driving Car: System Integration Project** 
 
+_Technologies: ROS, C++, Python (Keras)_
+
 #### Individual submission | Tomasz Sekulski | tomasz.sekulski[at]gmail.com
 
 ### Introduction
